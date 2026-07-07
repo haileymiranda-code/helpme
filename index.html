@@ -24,7 +24,7 @@
     color: var(--ink);
     line-height: 1.55;
   }
-  .wrap { max-width: 860px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
   header { text-align: center; margin-bottom: 2rem; }
   header h1 { font-size: 2rem; margin: 0 0 .35rem; font-weight: normal; letter-spacing: .02em; }
   header h1 .ampersand { color: var(--accent); font-style: italic; }
@@ -38,10 +38,13 @@
     padding: 1.5rem 1.5rem 1.75rem;
     margin-bottom: 1.5rem;
   }
+  .section { border-top: 1px solid var(--line); margin-top: 1.4rem; padding-top: 1.2rem; }
+  .section:first-child { border-top: 0; margin-top: 0; padding-top: 0; }
+  .section h3 { margin: 0 0 .9rem; font-size: 1.05rem; color: var(--accent); font-weight: bold; letter-spacing: .04em; text-transform: uppercase; }
   fieldset { border: 0; margin: 0 0 1.1rem; padding: 0; }
   label, legend { display: block; font-weight: bold; margin-bottom: .3rem; font-size: .95rem; }
   .hint { font-weight: normal; color: var(--muted); font-size: .85rem; }
-  input[type="date"], input[type="time"], input[type="number"], input[type="text"] {
+  input[type="date"], input[type="time"], input[type="number"], input[type="text"], select {
     font: inherit;
     padding: .5rem .6rem;
     border: 1px solid var(--line);
@@ -49,13 +52,22 @@
     background: #fff;
     color: var(--ink);
     width: 100%;
-    max-width: 260px;
+    max-width: 280px;
   }
-  input[type="text"] { max-width: 100%; }
+  input[type="text"].wide { max-width: 100%; }
   .row { display: flex; flex-wrap: wrap; gap: 1.25rem; }
   .row fieldset { flex: 1 1 240px; }
-  .choices label { font-weight: normal; display: inline-flex; align-items: center; gap: .4rem; margin: 0 1.1rem .25rem 0; }
-  .choices input { accent-color: var(--accent); }
+  .choices label { font-weight: normal; display: block; margin: 0 0 .35rem; }
+  .choices.inline label { display: inline-flex; align-items: center; gap: .4rem; margin: 0 1.1rem .25rem 0; }
+  .choices input { accent-color: var(--accent); margin-right: .35rem; }
+  .followup {
+    display: none;
+    background: var(--accent-soft);
+    border-radius: 8px;
+    padding: .9rem 1rem .5rem;
+    margin: .6rem 0 1rem;
+  }
+  .followup.open { display: block; }
   button.generate {
     font: inherit;
     font-size: 1.05rem;
@@ -130,55 +142,225 @@
 <div class="wrap">
   <header>
     <h1>Wedding Day Timeline <span class="ampersand">&amp;</span> Planner</h1>
-    <p>Answer a few questions and get a realistic sample timeline for your wedding day.</p>
+    <p>Answer the questions below and get a realistic, personalized sample timeline for your wedding day.</p>
     <hr class="rule">
   </header>
 
   <form class="card" id="tl-form" autocomplete="off">
-    <div class="row">
-      <fieldset>
-        <label for="date">1. Wedding date</label>
-        <input type="date" id="date" required>
+
+    <div class="section">
+      <h3>The Basics</h3>
+      <div class="row">
+        <fieldset>
+          <label for="date">Wedding date</label>
+          <input type="date" id="date" required>
+        </fieldset>
+        <fieldset>
+          <label for="ceremony">Ceremony start time</label>
+          <input type="time" id="ceremony" value="16:00" required>
+        </fieldset>
+        <fieldset>
+          <label for="end">Reception end time <span class="hint">(after midnight = next day)</span></label>
+          <input type="time" id="end" value="22:00" required>
+        </fieldset>
+        <fieldset>
+          <label for="guests">Number of guests</label>
+          <input type="number" id="guests" min="1" max="2000" value="100" required>
+        </fieldset>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Locations</h3>
+      <fieldset class="choices">
+        <legend>Is the ceremony at the same location as cocktail hour and the reception?</legend>
+        <label><input type="radio" name="venue" value="same" checked> Yes, everything is at the same venue.</label>
+        <label><input type="radio" name="venue" value="same_far"> Yes, it's technically the same venue, but the ceremony is a significant distance from the reception area.</label>
+        <label><input type="radio" name="venue" value="different"> No — the ceremony, cocktail hour, and/or reception are at different locations.</label>
       </fieldset>
+      <div class="followup" id="travel-followup">
+        <div class="row">
+          <fieldset>
+            <label for="travelmins">How long does it take guests to move between locations? <span class="hint">(minutes)</span></label>
+            <input type="number" id="travelmins" min="0" max="180" value="15">
+          </fieldset>
+          <fieldset>
+            <label for="transport">How are guests getting there?</label>
+            <select id="transport">
+              <option value="walk">Walking on property</option>
+              <option value="drive">Guests drive themselves</option>
+              <option value="shuttle">Shuttle / provided transportation</option>
+            </select>
+          </fieldset>
+        </div>
+        <fieldset class="choices inline">
+          <legend>Add a 10-minute buffer before cocktail hour / reception so guests can get settled?</legend>
+          <label><input type="radio" name="settle" value="yes" checked> Yes (recommended)</label>
+          <label><input type="radio" name="settle" value="no"> No</label>
+        </fieldset>
+      </div>
       <fieldset>
-        <label for="ceremony">2. Ceremony start time</label>
-        <input type="time" id="ceremony" value="16:00" required>
-      </fieldset>
-      <fieldset>
-        <label for="end">3. Reception end time <span class="hint">(if after midnight, we'll assume the next day)</span></label>
-        <input type="time" id="end" value="22:00" required>
+        <label for="seating">What time should guests begin being seated before the ceremony?</label>
+        <select id="seating">
+          <option value="15">15 minutes before</option>
+          <option value="30" selected>30 minutes before</option>
+          <option value="45">45 minutes before</option>
+        </select>
       </fieldset>
     </div>
 
-    <div class="row">
+    <div class="section">
+      <h3>Ceremony</h3>
+      <fieldset>
+        <label for="cerlen">How long is the ceremony expected to be?</label>
+        <select id="cerlen">
+          <option value="15">10–15 minutes (short & sweet)</option>
+          <option value="25" selected>20–30 minutes (typical)</option>
+          <option value="45">45+ minutes (religious / full mass)</option>
+          <option value="custom">Custom length…</option>
+        </select>
+      </fieldset>
+      <div class="followup" id="cerlen-followup">
+        <fieldset>
+          <label for="cerlencustom">Ceremony length in minutes</label>
+          <input type="number" id="cerlencustom" min="5" max="180" value="30">
+        </fieldset>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>The Flow of the Night</h3>
       <fieldset class="choices">
-        <legend>4. Are you doing a first look? <span class="hint">(seeing each other before the ceremony)</span></legend>
+        <legend>What kind of wedding flow do you want?</legend>
+        <label><input type="radio" name="flow" value="party" checked> Fast formalities — maximize dancing 🎉</label>
+        <label><input type="radio" name="flow" value="relaxed"> Relaxed and fluid — no rush</label>
+        <label><input type="radio" name="flow" value="traditional"> Traditional and structured</label>
+        <label><input type="radio" name="flow" value="dinner"> Dinner-focused and slower paced</label>
+      </fieldset>
+    </div>
+
+    <div class="section">
+      <h3>Dinner &amp; Toasts</h3>
+      <div class="row">
+        <fieldset>
+          <label for="service">What type of dinner service?</label>
+          <select id="service">
+            <option value="plated" selected>Plated</option>
+            <option value="buffet">Buffet</option>
+            <option value="family">Family style</option>
+            <option value="stations">Stations</option>
+            <option value="cocktail">Cocktail-style reception (no seated dinner)</option>
+          </select>
+        </fieldset>
+        <fieldset>
+          <label for="speakers">How many speakers / toasts?</label>
+          <input type="number" id="speakers" min="0" max="20" value="3">
+        </fieldset>
+        <fieldset>
+          <label for="maxspeakers">Max number of speakers <span class="hint">(optional cap)</span></label>
+          <input type="number" id="maxspeakers" min="0" max="20" placeholder="no limit">
+        </fieldset>
+      </div>
+      <fieldset class="choices">
+        <legend>When should speeches and toasts happen?</legend>
+        <label><input type="radio" name="speechtiming" value="during" checked> During dinner, as entertainment between courses</label>
+        <label><input type="radio" name="speechtiming" value="separate"> Separate from dinner — let people focus on eating, then toasts</label>
+      </fieldset>
+    </div>
+
+    <div class="section">
+      <h3>Dances</h3>
+      <fieldset class="choices inline">
+        <legend>Which formal dances will you have? <span class="hint">(check all that apply)</span></legend>
+        <label><input type="checkbox" id="d-first" checked> First dance</label>
+        <label><input type="checkbox" id="d-parents" checked> Parent dances</label>
+        <label><input type="checkbox" id="d-anniversary"> Anniversary dance</label>
+        <label><input type="checkbox" id="d-cultural"> Cultural dance(s)</label>
+        <label><input type="checkbox" id="d-lastdance"> Private last dance</label>
+      </fieldset>
+    </div>
+
+    <div class="section">
+      <h3>Grand Entrance</h3>
+      <fieldset class="choices">
+        <legend>Will you be doing a grand entrance?</legend>
+        <label><input type="radio" name="entrance" value="party" checked> Yes — the whole wedding party enters</label>
+        <label><input type="radio" name="entrance" value="couple"> Yes — just the two of us</label>
+        <label><input type="radio" name="entrance" value="none"> No grand entrance</label>
+      </fieldset>
+      <div class="followup" id="entrance-followup">
+        <div class="row">
+          <fieldset>
+            <label for="partysize">How many people are in the wedding party?</label>
+            <input type="number" id="partysize" min="0" max="40" value="8">
+          </fieldset>
+          <fieldset>
+            <label for="entrancestyle">How will they be introduced?</label>
+            <select id="entrancestyle">
+              <option value="couples" selected>In pairs / couples</option>
+              <option value="individual">Individually</option>
+              <option value="group">All together as a group</option>
+            </select>
+          </fieldset>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Photos</h3>
+      <fieldset class="choices inline">
+        <legend>Are you doing a first look? <span class="hint">(seeing each other before the ceremony)</span></legend>
         <label><input type="radio" name="firstlook" value="yes" checked> Yes</label>
         <label><input type="radio" name="firstlook" value="no"> No — we'll wait for the aisle</label>
       </fieldset>
-      <fieldset class="choices">
-        <legend>5. Ceremony &amp; reception at the same location?</legend>
-        <label><input type="radio" name="samelocation" value="yes" checked> Yes</label>
-        <label><input type="radio" name="samelocation" value="no"> No — different venues</label>
+      <fieldset class="choices inline">
+        <legend>Are sunset photos important to you?</legend>
+        <label><input type="radio" name="sunset" value="yes"> Yes</label>
+        <label><input type="radio" name="sunset" value="no" checked> No / not a priority</label>
       </fieldset>
+      <div class="followup" id="sunset-followup">
+        <fieldset>
+          <label for="sunsettime">Approximate sunset time on your date <span class="hint">(look it up for your city — it matters!)</span></label>
+          <input type="time" id="sunsettime" value="19:30">
+        </fieldset>
+      </div>
+      <fieldset class="choices inline">
+        <legend>Will you be joining your cocktail hour?</legend>
+        <label><input type="radio" name="joincocktail" value="yes" checked> Yes, we want to mingle</label>
+        <label><input type="radio" name="joincocktail" value="no"> No, we'll use that time for photos / a private moment</label>
+      </fieldset>
+      <div class="row">
+        <fieldset>
+          <label for="familyphotos">Family photos — before or after the ceremony?</label>
+          <select id="familyphotos">
+            <option value="before">Before the ceremony</option>
+            <option value="after" selected>After the ceremony</option>
+          </select>
+        </fieldset>
+        <fieldset>
+          <label for="partyphotos">Wedding party photos — before or after?</label>
+          <select id="partyphotos">
+            <option value="before" selected>Before the ceremony</option>
+            <option value="after">After the ceremony</option>
+          </select>
+        </fieldset>
+      </div>
     </div>
 
-    <fieldset>
-      <label for="guests">6. Number of guests</label>
-      <input type="number" id="guests" min="1" max="2000" value="100" required>
-    </fieldset>
-
-    <fieldset class="choices">
-      <legend>7. Special events <span class="hint">(check all you're planning)</span></legend>
-      <label><input type="checkbox" id="ev-toasts" checked> Speeches / toasts</label>
-      <label><input type="checkbox" id="ev-cake" checked> Cake cutting</label>
-      <label><input type="checkbox" id="ev-cultural"> Cultural or religious tradition</label>
-      <label><input type="checkbox" id="ev-sendoff" checked> Grand send-off (sparklers, etc.)</label>
-      <label style="display:block; margin-top:.5rem;">
-        Anything else? <span class="hint">(optional — e.g., bouquet toss, anniversary dance, live painter)</span>
-        <input type="text" id="ev-other" placeholder="e.g., bouquet toss, tea ceremony, surprise performance">
-      </label>
-    </fieldset>
+    <div class="section">
+      <h3>Special Events</h3>
+      <fieldset class="choices inline">
+        <legend>Check all you're planning:</legend>
+        <label><input type="checkbox" id="ev-cake" checked> Cake cutting</label>
+        <label><input type="checkbox" id="ev-bouquet"> Bouquet / garter toss</label>
+        <label><input type="checkbox" id="ev-cultural"> Cultural or religious tradition</label>
+        <label><input type="checkbox" id="ev-sendoff" checked> Grand send-off (sparklers, etc.)</label>
+      </fieldset>
+      <fieldset>
+        <label for="ev-other">Any other important events or transitions? <span class="hint">(optional)</span></label>
+        <input type="text" id="ev-other" class="wide" placeholder="e.g., tea ceremony, surprise performance, live painter reveal">
+      </fieldset>
+    </div>
 
     <button type="submit" class="generate">Generate my timeline</button>
   </form>
@@ -215,6 +397,18 @@
   "use strict";
 
   var form = document.getElementById("tl-form");
+
+  // ---- conditional follow-up questions ----------------------------------
+  function syncFollowups() {
+    var venue = form.venue.value;
+    document.getElementById("travel-followup").classList.toggle("open", venue !== "same");
+    document.getElementById("cerlen-followup").classList.toggle("open", document.getElementById("cerlen").value === "custom");
+    document.getElementById("entrance-followup").classList.toggle("open", form.entrance.value === "party");
+    document.getElementById("sunset-followup").classList.toggle("open", form.sunset.value === "yes");
+  }
+  form.addEventListener("change", syncFollowups);
+  syncFollowups();
+
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     generate();
@@ -222,7 +416,7 @@
     document.getElementById("result").scrollIntoView({ behavior: "smooth" });
   });
 
-  // ---- helpers ---------------------------------------------------------
+  // ---- helpers ----------------------------------------------------------
 
   // Minutes since midnight of the wedding day; may exceed 1440 (after midnight).
   function parseTime(value) {
@@ -252,185 +446,343 @@
     return h + (h === 1 ? " hr" : " hrs") + (m ? " " + m + " min" : "");
   }
 
-  // ---- timeline logic --------------------------------------------------
+  // ---- timeline logic ---------------------------------------------------
 
   function generate() {
     var dateISO = document.getElementById("date").value;
-    var C = parseTime(document.getElementById("ceremony").value); // ceremony start
-    var E = parseTime(document.getElementById("end").value);      // reception end
-    var firstLook = form.firstlook.value === "yes";
-    var sameLocation = form.samelocation.value === "yes";
+    var C = parseTime(document.getElementById("ceremony").value);
+    var E = parseTime(document.getElementById("end").value);
     var guests = parseInt(document.getElementById("guests").value, 10) || 100;
-    var wantToasts = document.getElementById("ev-toasts").checked;
+
+    var venue = form.venue.value;                    // same | same_far | different
+    var travel = venue === "same" ? 0 : Math.max(0, parseInt(document.getElementById("travelmins").value, 10) || 15);
+    var transport = document.getElementById("transport").value;
+    var settle = venue !== "same" && form.settle.value === "yes" ? 10 : 0;
+    var seatingLead = parseInt(document.getElementById("seating").value, 10);
+
+    var cerSel = document.getElementById("cerlen").value;
+    var cerLen = cerSel === "custom"
+      ? Math.max(5, parseInt(document.getElementById("cerlencustom").value, 10) || 30)
+      : parseInt(cerSel, 10);
+
+    var flow = form.flow.value;                      // party | relaxed | traditional | dinner
+    var service = document.getElementById("service").value;
+    var speakers = Math.max(0, parseInt(document.getElementById("speakers").value, 10) || 0);
+    var maxSpeakersRaw = document.getElementById("maxspeakers").value;
+    var maxSpeakers = maxSpeakersRaw === "" ? null : Math.max(0, parseInt(maxSpeakersRaw, 10) || 0);
+    var speechDuring = form.speechtiming.value === "during";
+
+    var dFirst = document.getElementById("d-first").checked;
+    var dParents = document.getElementById("d-parents").checked;
+    var dAnniversary = document.getElementById("d-anniversary").checked;
+    var dCultural = document.getElementById("d-cultural").checked;
+    var dLast = document.getElementById("d-lastdance").checked;
+
+    var entrance = form.entrance.value;              // party | couple | none
+    var partySize = Math.max(0, parseInt(document.getElementById("partysize").value, 10) || 0);
+    var entranceStyle = document.getElementById("entrancestyle").value;
+
+    var firstLook = form.firstlook.value === "yes";
+    var sunsetWanted = form.sunset.value === "yes";
+    var sunsetTime = sunsetWanted ? parseTime(document.getElementById("sunsettime").value) : null;
+    var joinCocktail = form.joincocktail.value === "yes";
+    var familyBefore = document.getElementById("familyphotos").value === "before";
+    var partyBefore = document.getElementById("partyphotos").value === "before";
+
     var wantCake = document.getElementById("ev-cake").checked;
+    var wantBouquet = document.getElementById("ev-bouquet").checked;
     var wantCultural = document.getElementById("ev-cultural").checked;
     var wantSendoff = document.getElementById("ev-sendoff").checked;
     var otherEvents = document.getElementById("ev-other").value.trim();
 
-    // Reception end at/before ceremony start means it runs past midnight.
     if (E <= C) E += 1440;
 
     var warnings = [];
-    var rows = []; // {t, event, note, milestone}
-
+    var tips = [];
+    var rows = [];
     function add(t, event, note, milestone) {
       rows.push({ t: t, event: event, note: note || "", milestone: !!milestone });
     }
 
-    // -- guest-count driven durations --
-    var dinnerMins   = guests <= 50 ? 45 : guests <= 120 ? 60 : guests <= 200 ? 75 : 90;
-    var familyPhotos = guests <= 75 ? 30 : 45;
-    var travel = sameLocation ? 0 : 30;
-    var ceremonyMins = 30;
-
-    // -- morning & pre-ceremony (built backwards from ceremony start) --
-    if (firstLook) {
-      var hmu = C - 390; // 6.5 hrs before
-      add(hmu, "Hair & makeup begins",
-        "Plan roughly 45–60 min per person plus extra time for the couple. Confirm the schedule with your stylist — they set the real start time.");
-      add(hmu + 30, "Breakfast & getting ready",
-        "Eat a real meal now — it may be your last calm moment to eat until dinner. Assign someone to handle vendor calls so you don't have to.");
-      add(C - 330, "Photographer arrives — detail photos",
-        "Have the dress/attire, rings, invitation suite, shoes, and jewelry gathered in one place and ready to shoot.");
-      add(C - 270, "Get dressed + getting-ready photos",
-        "Allow 30–45 min — buttons, laces, and steamed attire take longer than you think. Anyone helping you dress should already be dressed themselves.");
-      add(C - 210, "First look + couple portraits", "A private moment together before the ceremony, then 30–45 min of relaxed couple portraits.", true);
-      add(C - 165, "Wedding party photos", "Everyone together — have bouquets, boutonnières, and any props ready to go.");
-      add(C - 120, "Family photos (" + familyPhotos + " min)",
-        "Give your photographer a shot list ahead of time and assign a family member to round people up" + (guests > 75 ? " — with a larger guest list, wrangling takes longer" : "") + ".");
-      add(C - 75, "Photos wrap — tuck away & touch-ups",
-        "Hide away before guests start arriving. Hydrate, snack, and take a breath.");
-      add(C - 45, "Guests begin arriving", "Have music playing and ushers/programs ready.");
-    } else {
-      var hmu2 = C - 360; // 6 hrs before
-      add(hmu2, "Hair & makeup begins",
-        "Plan roughly 45–60 min per person plus extra time for the couple. Confirm the schedule with your stylist — they set the real start time.");
-      add(hmu2 + 30, "Breakfast & getting ready",
-        "Eat a real meal now — it may be your last calm moment to eat until dinner. Assign someone to handle vendor calls so you don't have to.");
-      add(C - 300, "Photographer arrives — detail photos",
-        "Have the dress/attire, rings, invitation suite, shoes, and jewelry gathered in one place and ready to shoot.");
-      add(C - 240, "Get dressed + getting-ready photos",
-        "Allow 30–45 min — buttons, laces, and steamed attire take longer than you think. Anyone helping you dress should already be dressed themselves.");
-      add(C - 180, "Individual portraits & wedding party photos",
-        "Since you're skipping the first look, each side of the wedding party is photographed separately so the couple doesn't cross paths.");
-      add(C - 75, "Photos wrap — tuck away & touch-ups",
-        "Hide away before guests start arriving. Hydrate, snack, and take a breath.");
-      add(C - 45, "Guests begin arriving", "Have music playing and ushers/programs ready.");
+    // Speakers: apply the cap, recommend one if none set.
+    var effSpeakers = maxSpeakers !== null ? Math.min(speakers, maxSpeakers) : speakers;
+    if (maxSpeakers !== null && speakers > maxSpeakers) {
+      warnings.push("You listed " + speakers + " speakers but capped it at " + maxSpeakers +
+        " — the timeline uses " + maxSpeakers + ". Decide who makes the cut early so nobody is surprised on the day.");
     }
+    if (effSpeakers > 4) {
+      warnings.push("With " + effSpeakers + " speakers, toasts will run ~" + (effSpeakers * 5) +
+        " minutes. Most planners recommend a maximum of 4 (each at 3–5 min). Consider trimming the list or moving some speeches to the rehearsal dinner.");
+    }
+    var toastMins = effSpeakers > 0 ? effSpeakers * 5 + 5 : 0;
+
+    // Dinner duration by service type, scaled by guest count.
+    var sizeBump = (guests > 120 ? 15 : 0) + (guests > 200 ? 15 : 0);
+    var dinnerBase = { plated: 45, buffet: 60, family: 50, stations: 55, cocktail: 45 }[service];
+    var dinnerMins = dinnerBase + sizeBump;
+    if (flow === "dinner") dinnerMins += 15;
+    if (speechDuring && toastMins > 0) dinnerMins += Math.round(toastMins / 2); // toasts between courses stretch service a bit
+
+    var serviceNotes = {
+      plated: "Plated service is the most predictable timing-wise. Give your caterer final counts and dietary needs early.",
+      buffet: "Buffets take longer with more guests — your caterer can release tables one at a time to keep lines short.",
+      family: "Family style is social and fairly quick, but needs bigger tables — confirm your rentals fit the platters.",
+      stations: "Stations keep energy up but guests eat at different paces — great with a relaxed flow.",
+      cocktail: "A cocktail-style reception means heavy passed apps and stations instead of a seated dinner — make sure guests know there's no formal meal, and plan plenty of food."
+    };
+
+    var familyPhotoMins = guests <= 75 ? 30 : 45;
+
+    // ---- pre-ceremony (built backwards from ceremony start) ----
+    var preBlocks = 0;
+    if (firstLook) preBlocks++;
+    if (partyBefore) preBlocks++;
+    if (familyBefore) preBlocks++;
+    var prepStart = C - 240 - preBlocks * 45 - 30;
+    var t = prepStart;
+
+    add(t, "Hair & makeup begins",
+      "Plan roughly 45–60 min per person plus extra time for the couple. Confirm the schedule with your stylist — they set the real start time.");
+    add(t + 30, "Breakfast & getting ready",
+      "Eat a real meal now — it may be your last calm moment to eat until dinner. Assign someone to handle vendor calls so you don't have to.");
+    add(t + 60, "Photographer arrives — detail photos",
+      "Have the dress/attire, rings, invitation suite, shoes, and jewelry gathered in one place and ready to shoot.");
+    t = t + 120;
+    add(t, "Get dressed + getting-ready photos",
+      "Allow 30–45 min — buttons, laces, and steamed attire take longer than you think. Anyone helping you dress should already be dressed themselves.");
+    t += 45;
+    if (firstLook) {
+      add(t, "First look + couple portraits",
+        "A private moment together before the ceremony, then 30–45 min of relaxed couple portraits.", true);
+      t += 45;
+    }
+    if (partyBefore) {
+      add(t, "Wedding party photos",
+        firstLook ? "Everyone together — have bouquets, boutonnières, and any props ready to go."
+                  : "No first look, so each side of the wedding party is photographed separately to keep the couple apart.");
+      t += 45;
+    }
+    if (familyBefore) {
+      if (!firstLook) {
+        warnings.push("Family photos before the ceremony without a first look means photographing each side of the family separately (no photos of the couple together). Many couples in this setup do family photos after the ceremony instead.");
+      }
+      add(t, "Family photos (" + familyPhotoMins + " min)",
+        "Give your photographer a shot list and assign a family member to round people up" + (guests > 75 ? " — with a larger guest list, wrangling takes longer" : "") + ".");
+      t += familyPhotoMins;
+    }
+    add(t, "Photos wrap — tuck away & touch-ups", "Hide away before guests arrive. Hydrate, snack, and take a breath.");
+    add(C - seatingLead, "Guests begin being seated",
+      "Prelude music playing, ushers and programs ready. " + (seatingLead >= 30 ? "" : "15 minutes is tight if guests need to park and walk — consider 30."));
     add(C - 15, "Wedding party lines up", "Officiant, music, and processional order confirmed.");
 
-    // -- ceremony --
-    add(C, "Ceremony (" + ceremonyMins + " min)",
-      "A typical ceremony runs 20–30 min. Religious or cultural ceremonies can run longer — confirm with your officiant.", true);
+    // ---- ceremony ----
+    add(C, "Ceremony (" + dur(cerLen) + ")",
+      cerLen >= 45 ? "Longer ceremonies benefit from programs, fans/heaters, and water for guests. Confirm the real run time with your officiant."
+                   : "Confirm the run time with your officiant — vows, readings, and rituals add up.", true);
 
-    var t = C + ceremonyMins;
+    t = C + cerLen;
     add(t, "Ceremony ends — hugs & mingling", "Build in ~15 min of buffer here; guests always linger.");
     t += 15;
 
-    if (!sameLocation) {
-      add(t, "Travel to reception venue (~" + travel + " min)",
-        "Share directions and parking info with guests in advance. Confirm real drive time for your route and add traffic buffer.");
+    if (travel > 0) {
+      var travelNote = {
+        walk: "It's a walk across the property — signage or an escort keeps guests from wandering.",
+        drive: "Guests drive themselves — share directions and parking info in advance, and expect stragglers.",
+        shuttle: "Shuttle transportation — confirm pickup times and how many trips are needed for your guest count."
+      }[transport];
+      add(t, "Guests move to " + (venue === "different" ? "the reception venue" : "the reception area") + " (~" + travel + " min)", travelNote);
       t += travel;
+      if (settle > 0) {
+        add(t, "Settling-in buffer (10 min)", "Guests find drinks, restrooms, and their bearings before the next event begins.");
+        t += settle;
+      }
     }
 
-    // -- cocktail hour --
-    var cocktailMins = firstLook ? 60 : 90;
+    // ---- cocktail hour ----
+    var photosAfter = (!familyBefore ? familyPhotoMins : 0) + (!partyBefore ? 30 : 0) + (!firstLook ? 40 : 0);
+    // Cocktail hour must be long enough to contain the post-ceremony photo list.
+    var cocktailMins = Math.max(60, Math.min(120, photosAfter + 10));
+    if (flow === "relaxed") cocktailMins += 15;
+    if (photosAfter + 10 > 120) {
+      warnings.push("Your post-ceremony photo list (~" + dur(photosAfter) + ") doesn't fit even a 2-hour cocktail hour. Move wedding party" + (firstLook ? "" : " or family") + " photos before the ceremony, or trim the shot list with your photographer.");
+    }
     var cocktailStart = t;
-    if (firstLook) {
-      add(cocktailStart, "Cocktail hour begins (" + cocktailMins + " min)",
-        "Guests enjoy drinks and appetizers while you sneak away for 15–20 min of just-married portraits — then join your own cocktail hour!", true);
+
+    add(cocktailStart, "Cocktail hour begins (" + dur(cocktailMins) + ")",
+      photosAfter > 45
+        ? "Extended so post-ceremony photos fit inside it. Keep appetizers and drinks flowing so guests stay happy."
+        : "Guests enjoy drinks and appetizers.", true);
+
+    var pt = cocktailStart;
+    if (!familyBefore) {
+      add(pt, "Family photos (" + familyPhotoMins + " min)",
+        "Right after the ceremony while everyone is gathered. A shot list and a designated family-wrangler keep this fast.");
+      pt += familyPhotoMins;
+    }
+    if (!partyBefore) {
+      add(pt, "Wedding party photos (30 min)", "Keep the party close after the ceremony so this starts immediately.");
+      pt += 30;
+    }
+    if (!firstLook) {
+      add(pt, "Couple portraits (~40 min)", "Your first photos together as newlyweds.");
+      pt += 40;
+    }
+    if (joinCocktail) {
+      var joinAt = Math.max(pt, cocktailStart);
+      if (joinAt <= cocktailStart + cocktailMins - 15) {
+        add(joinAt, "Couple joins cocktail hour", "Mingle time! This is often the easiest window to greet guests so table visits don't eat your dance floor later.");
+      } else {
+        warnings.push("Your post-ceremony photos fill nearly all of cocktail hour, so there's little time left to join it. " +
+          (firstLook ? "Consider moving family or wedding party photos before the ceremony" : "Consider a first look so most photos happen before the ceremony") +
+          " if mingling at cocktail hour matters to you.");
+      }
     } else {
-      add(cocktailStart, "Cocktail hour begins (" + cocktailMins + " min)",
-        "Extended to 90 min because family and couple photos happen now. Make sure appetizers and drinks keep guests happy.", true);
-      add(cocktailStart, "Family photos (" + familyPhotos + " min)",
-        "Right after the ceremony while everyone is still gathered. A shot list and a designated family-wrangler keep this fast.");
-      add(cocktailStart + familyPhotos, "Couple portraits (~40 min)",
-        "Your first photos together as newlyweds — this is why cocktail hour runs long without a first look.");
+      tips.push("You're skipping cocktail hour — use part of it for a private moment together and a plate of appetizers. Have your caterer set some aside.");
     }
 
-    // -- reception --
+    // ---- reception ----
     t = cocktailStart + cocktailMins;
     var recStart = t;
-    add(t, "Reception entrance", "Wedding party and couple are announced. Confirm names/pronunciations with your DJ or MC.", true);
-    t += 15;
 
-    add(t, "Dinner service (" + dur(dinnerMins) + ")",
-      "Sized for ~" + guests + " guests. Plated service is usually faster than a buffet at this size — confirm timing with your caterer. Eat! People will try to talk to you; your planner or MC can run interference.");
-    t += dinnerMins;
-
-    if (wantToasts) {
-      add(t, "Toasts & speeches (~20 min)",
-        "2–4 speakers at 3–5 min each works best. Schedule them near the end of dinner so speakers can relax and eat first.", true);
-      t += 20;
+    if (entrance !== "none") {
+      var entranceMins = 5;
+      if (entrance === "party") {
+        entranceMins = entranceStyle === "individual" ? 5 + Math.ceil(partySize * 1)
+                     : entranceStyle === "couples"    ? 5 + Math.ceil(partySize / 2) * 1.5
+                     : 8;
+        entranceMins = Math.max(5, Math.min(25, Math.round(entranceMins)));
+      }
+      add(t, "Grand entrance (" + dur(entranceMins) + ")",
+        entrance === "party"
+          ? "Wedding party of " + partySize + " introduced " + (entranceStyle === "individual" ? "individually" : entranceStyle === "couples" ? "in pairs" : "as a group") + ", then the couple. Give your MC a phonetic name list."
+          : "Just the two of you announced — quick, punchy, and straight into the room.", true);
+      t += entranceMins;
+      if (flow === "party" && dFirst) {
+        add(t, "First dance — straight off the entrance",
+          "Rolling from the entrance into the first dance keeps all eyes on you and the energy high — a classic party-flow move.", true);
+        t += 5;
+        dFirst = false; // consumed
+      }
+    } else if (flow === "party" && dFirst) {
+      tips.push("No grand entrance, but with a party flow consider opening the reception with your first dance to set the tone.");
     }
 
-    add(t, "First dance", "A natural transition from dinner to dancing — the dance floor opens right after.", true);
-    t += 10;
-    add(t, "Parent dances", "Traditionally one dance per parent; you can share a song to save time.");
-    t += 10;
+    add(t, "Dinner service (" + dur(dinnerMins) + ")",
+      serviceNotes[service] + " Sized for ~" + guests + " guests. And eat! Your planner or MC can run interference on table-side chats.");
+    if (speechDuring && effSpeakers > 0) {
+      add(t + 20, "Toasts during dinner (" + effSpeakers + " speaker" + (effSpeakers === 1 ? "" : "s") + ")",
+        "Spread between courses as entertainment — 3–5 min each. Speakers eat first, then speak.", true);
+    }
+    t += dinnerMins;
+
+    if (!speechDuring && effSpeakers > 0) {
+      add(t, "Toasts & speeches (" + dur(toastMins) + ")",
+        effSpeakers + " speaker" + (effSpeakers === 1 ? "" : "s") + " at 3–5 min each, right after dinner so everyone could focus on eating first.", true);
+      t += toastMins;
+    }
+
+    var danceBlock = [];
+    if (dFirst) danceBlock.push(["First dance", 5, "A natural transition into the dancing portion of the night."]);
+    if (dParents) danceBlock.push(["Parent dances", 10, "Traditionally one dance per parent; you can share a song to save time."]);
+    if (dAnniversary) danceBlock.push(["Anniversary dance", 5, "All married couples dance; the longest-married pair gets the spotlight — a lovely multigenerational moment."]);
+    if (dCultural) danceBlock.push(["Cultural dance(s)", 15, "Timing is flexible — place this wherever your tradition calls for; your DJ or band should have the music cued."]);
+    danceBlock.forEach(function (d) {
+      add(t, d[0], d[2], d[0] === "First dance");
+      t += d[1];
+    });
 
     if (wantCultural) {
       add(t, "Cultural / religious tradition (~20 min)",
-        "Placed here as a suggestion — many traditions belong earlier (during the ceremony or dinner). Move this block wherever your tradition calls for.", true);
+        "Placed here as a suggestion — many traditions belong earlier (during the ceremony or dinner). Move this wherever yours calls for.", true);
       t += 20;
     }
 
     if (wantCake) {
-      add(t, "Cake cutting", "A great photo moment that also signals to older guests that it's okay to head home soon.", true);
+      add(t, "Cake cutting", "A great photo moment that also signals to older guests it's okay to head home soon.", true);
       t += 15;
     }
 
+    // ---- sunset photos (inserted wherever golden hour falls) ----
+    if (sunsetWanted && sunsetTime !== null) {
+      var golden = sunsetTime - 50;
+      add(golden, "☀️ Sunset / golden-hour photos (~20 min)",
+        "Sneak out with your photographer about an hour before sunset (" + fmt(sunsetTime) + "). Tell your DJ so nothing important happens while you're gone.", true);
+      var dinnerEnd = recStart + dinnerMins + 40;
+      if (golden < C + cerLen) {
+        warnings.push("Golden hour (" + fmt(golden) + ") lands before or during your ceremony — sunset portraits won't work that day. Ask your photographer about earlier portrait light instead.");
+      } else if (golden >= recStart && golden <= dinnerEnd) {
+        warnings.push("Golden hour (" + fmt(golden) + ") lands during your grand entrance / dinner window. Talk to your photographer and caterer — a common fix is slipping out between courses for 15 minutes.");
+      }
+    }
+
+    // ---- dancing & close-out ----
     var lastCall = E - 30;
-    var dancingMins = lastCall - t;
+    var reservedEnd = (dLast ? 10 : 0);
+    var dancingMins = lastCall - t - reservedEnd;
     var actualEnd = E;
+
     if (dancingMins >= 15) {
       add(t, "Open dancing (" + dur(dancingMins) + ")",
-        "The party! Give your DJ or band a short must-play and do-not-play list.", true);
+        "The party! Give your DJ or band a short must-play and do-not-play list." +
+        (wantBouquet ? " The bouquet/garter toss happens mid-dance-set to keep energy up." : ""), true);
+      if (wantBouquet) add(t + Math.min(30, Math.round(dancingMins / 3)), "Bouquet / garter toss", "Your DJ gathers everyone — 10 minutes, then straight back to dancing.");
     }
     if (dancingMins < 0) {
-      // The planned events overrun the stated end time — push the closing
-      // events later so the table stays in order, and flag the overrun.
-      lastCall = t;
-      actualEnd = t + 30;
+      lastCall = t + reservedEnd;
+      actualEnd = lastCall + 30;
       warnings.push("Your planned events run until about " + fmt(actualEnd) + " — past your stated reception end of " + fmt(E) +
         ". Start the ceremony earlier, extend the reception, or trim events to make room (and for any open dancing at all).");
     }
 
     add(lastCall, "Last call", "Bar typically closes 15–30 min before the end so things wind down smoothly.");
 
+    if (dLast) {
+      add(actualEnd - (wantSendoff ? 20 : 10), "Private last dance",
+        "Guests step out to line up for the send-off while you two share the final song alone in the room — a favorite quiet moment.", true);
+    }
     if (wantSendoff) {
-      add(actualEnd - 10, "Line up for the send-off", "Your coordinator or DJ gathers guests and hands out sparklers, bubbles, or petals.");
+      add(actualEnd - 10, "Guests line up for the send-off", "Your coordinator or DJ hands out sparklers, bubbles, or petals.");
       add(actualEnd, "Grand send-off / final exit",
         "Check venue rules on sparklers and open flames first. Confirm your getaway car is booked for this exact time.", true);
     } else {
       add(actualEnd, "Reception ends", "Confirm your venue's hard end time — overtime fees add up fast. Assign someone to take gifts and personal items home.", true);
     }
 
-    // -- sanity checks / warnings --
+    // ---- warnings & flow-aware suggestions ----
     if (dancingMins >= 0 && dancingMins < 45) {
-      warnings.push("Your timeline is tight — there " + (dancingMins < 15 ? "is almost no time" : "is only about " + dur(dancingMins)) +
-        " left for open dancing. Consider starting the ceremony earlier, ending the reception later, or trimming events.");
+      var fix = speechDuring ? "trimming the speaker list or shortening dinner" : "moving toasts into dinner, which returns ~" + dur(toastMins) + " to the dance floor";
+      warnings.push("Your timeline is tight — only about " + dur(Math.max(dancingMins, 0)) + " of open dancing. Consider " + fix + ", starting the ceremony earlier, or ending later.");
+    }
+    if (flow === "party" && !speechDuring && effSpeakers > 0 && dancingMins < 90) {
+      warnings.push("You chose a party-focused flow but kept toasts separate from dinner. Moving them during dinner frees up ~" + dur(toastMins) + " for dancing.");
+    }
+    if (flow === "traditional" && speechDuring) {
+      tips.push("For a traditional, structured flow, some couples prefer toasts as their own moment after dinner rather than between courses — either works; you chose during dinner.");
     }
     if (E - recStart < 180) {
       warnings.push("Your reception is under 3 hours. Most receptions run 4–5 hours — dinner, toasts, and dances alone usually fill 2 hours.");
     }
     var firstRow = rows.reduce(function (a, b) { return a.t < b.t ? a : b; });
     if (firstRow.t < 6 * 60) {
-      warnings.push("Hair & makeup starts before 6:00 AM. Consider a later ceremony, a smaller morning photo plan, or an extra stylist to compress getting-ready time.");
+      warnings.push("Hair & makeup starts before 6:00 AM (" + fmt(firstRow.t) + "). Consider a later ceremony, moving more photos to after the ceremony, or adding a second stylist.");
     }
     if (actualEnd > 1440) {
       warnings.push("Your reception ends after midnight (shown as the next day's time). Double-check your venue's late-night policy and vendor overtime rates.");
+    }
+    if (service === "cocktail" && guests > 150) {
+      warnings.push("Cocktail-style service for " + guests + " guests needs generous food stations and seating for at least half your guests — confirm quantities with your caterer.");
     }
     if (otherEvents) {
       warnings.push("Don't forget to schedule: " + otherEvents + ". Open dancing is the most flexible block to borrow time from — ask your planner or DJ where these fit best.");
     }
 
-    // -- render --
+    // ---- render ----
+    var flowLabels = { party: "party-focused", relaxed: "relaxed & fluid", traditional: "traditional", dinner: "dinner-focused" };
     var dateText = fmtDate(dateISO);
     document.getElementById("result-date").textContent =
-      (dateText ? dateText + " · " : "") + "Ceremony " + fmt(C) + " · " + guests + " guests" +
-      (firstLook ? " · with first look" : " · no first look") +
-      (sameLocation ? "" : " · two venues");
+      (dateText ? dateText + " · " : "") + "Ceremony " + fmt(C) + " · " + guests + " guests · " +
+      flowLabels[flow] + " flow" + (firstLook ? " · with first look" : "") +
+      (venue === "same" ? "" : venue === "same_far" ? " · long on-property transition" : " · multiple locations");
 
     var warnBox = document.getElementById("warnings");
     warnBox.innerHTML = "";
@@ -456,22 +808,20 @@
       tbody.appendChild(tr);
     });
 
-    var tips = [
-      "Pad everything: things run late, not early. This timeline already includes buffer, but resist the urge to squeeze it out.",
+    var baseTips = [
+      "Pad everything: things run late, not early. This timeline already includes buffer — resist the urge to squeeze it out.",
       "Share the final timeline with every vendor (photographer, DJ/band, caterer, venue, transportation) at least 2 weeks out.",
       "Assign a point person (planner, coordinator, or a very organized friend) so vendors never have to interrupt you with questions.",
-      firstLook
-        ? "Your first look means most photos are done before the ceremony — you get to actually attend your own cocktail hour."
-        : "Without a first look, cocktail hour is your photo window — keep family close by right after the ceremony so photos start immediately.",
-      sameLocation
-        ? "Same venue for everything means no travel risk — one less thing to worry about."
-        : "With two venues, confirm transportation for the couple and wedding party, and consider a shuttle if guest parking is limited.",
-      "Check sunset time for your date — golden-hour portraits (20 min, roughly an hour before sunset) are worth planning around.",
+      flow === "party" ? "Party flow: keep every formality tight and front-loaded — once the dance floor opens, don't interrupt it more than once."
+      : flow === "relaxed" ? "Relaxed flow: your buffers are generous on purpose. Let moments breathe and don't panic if things drift 10–15 minutes."
+      : flow === "dinner" ? "Dinner-focused flow: consider printed menus and a slightly longer cocktail hour — the meal is the main event."
+      : "Traditional flow: a printed order of events helps guests know what's coming and when.",
       "Feed your vendors — most contracts require it, and a fed photographer at hour 8 is a happy photographer."
     ];
+    if (!sunsetWanted) baseTips.push("Check the sunset time for your date anyway — even 15 minutes of golden-hour light makes portraits glow.");
     var tipsList = document.getElementById("tips-list");
     tipsList.innerHTML = "";
-    tips.forEach(function (tip) {
+    baseTips.concat(tips).forEach(function (tip) {
       var li = document.createElement("li");
       li.textContent = tip;
       tipsList.appendChild(li);
